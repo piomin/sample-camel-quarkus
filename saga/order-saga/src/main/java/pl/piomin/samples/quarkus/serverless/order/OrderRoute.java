@@ -31,7 +31,7 @@ public class OrderRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         from("timer:tick?period=10000")
-                .setBody(constant(new Order(null, (int) num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW)))
+                .setBody(constant(new Order(null, (int) ++num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW)))
 //                .to("kafka:test?brokers=my-cluster-kafka-bootstrap.kafka:9092")
                 .to("jpa:" + Order.class.getName())
                 .log("Order id=${body.id}");
@@ -40,25 +40,29 @@ public class OrderRoute extends RouteBuilder {
         format.setUnmarshalType(Order.class);
 
         rest("/orders")
-                .post("/confirm")
-                .consumes("application/json").type(Order.class)
+                .post("/confirm").consumes("application/json").type(Order.class)
                 .route()
                     .unmarshal(format)
-                    .log("Order id=${body.id}, status=${body.status}")
                     .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id= ${body.id}")
-                .choice()
-                    .when().simple("${body[0].status} == 'NEW'")
-                        .setBody(simple("${body[0].updateStatus(OrderStatus.IN_PROGRESS)}"))
-                        .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
-                        .marshal(format)
-                        .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
-                    .otherwise()
-                        .log("Order status=${body.status}")
-                        .process(processor)
-                        .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
-//                    .to("kafka:test?brokers=my-cluster-kafka-bootstrap.kafka:9092")
-                .endChoice()
+                    .log("Status: ${body[0].status.toString()}")
+                    .choice()
+                        .when().simple("${body[0].status.toString()} == 'NEW'")
+                            .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.IN_PROGRESS))
+                        .otherwise()
+                            .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.CONFIRMED))
+    //                    .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092")
+                    .end()
+                .log("Order: ${body}")
+                    .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
+                    .marshal(format)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
                 .endRest();
+    }
+
+    private Order updateOrderStatus(Exchange exchange, OrderStatus status) {
+        Order order = (Order) exchange.getIn().getBody(List.class).get(0);
+        order.setStatus(status);
+        return order;
     }
 
 }
@@ -102,3 +106,48 @@ class OrderUpdateProcessor implements Processor {
         exchange.getIn().setBody(order);
     }
 }
+
+//@ApplicationScoped
+//public class OrderRoute extends RouteBuilder {
+//
+//    private static long num = 0;
+//
+//    @Inject
+//    OrderUpdateProcessor processor;
+//
+//    @Override
+//    public void configure() throws Exception {
+//
+//        from("timer:tick?period=10000")
+//                .setBody(constant(new Order(null, (int) num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW)))
+////                .to("kafka:test?brokers=my-cluster-kafka-bootstrap.kafka:9092")
+//                .to("jpa:" + Order.class.getName())
+//                .log("Order id=${body.id}");
+//
+//        JacksonDataFormat format = new JacksonDataFormat();
+//        format.setUnmarshalType(Order.class);
+//
+//        rest("/orders")
+//                .post("/confirm").consumes("application/json").type(Order.class)
+//                .route()
+//                .unmarshal(format)
+//                .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id= ${body.id}")
+//                .choice()
+//                .when().simple("${body[0].status} == 'NEW'")
+//                .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.IN_PROGRESS))
+//                .otherwise()
+//                .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.CONFIRMED))
+//                .endChoice()
+//                .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
+//                .marshal(format)
+//                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
+//                .endRest();
+//    }
+//
+//    private Order updateOrderStatus(Exchange exchange, OrderStatus status) {
+//        Order order = (Order) exchange.getIn().getBody(List.class).get(0);
+//        order.setStatus(status);
+//        return order;
+//    }
+//
+//}
