@@ -35,13 +35,13 @@ public class CustomerRoute extends RouteBuilder {
                         order.setStatus(OrderStatus.IN_PROGRESS);
                         return order;
                     })
-//                .to("kafka")
+                    .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
             .end()
             .setProperty("orderAmount", simple("${body.amount}", Integer.class))
             .setProperty("orderStatus", simple("${body.status}", OrderStatus.class))
             .toD("jpa:" + Customer.class.getName() + "?query=select c from Customer c where c.id= ${body.customerId}")
                 .choice()
-                    .when().simple("${property.orderStatus} == 'NEW'")
+                    .when().simple("${exchangeProperty.orderStatus} == 'IN_PROGRESS'")
                         .setBody(exchange -> {
                             Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
                             customer.setAmountReserved(customer.getAmountReserved() + exchange.getProperty("orderAmount", Integer.class));
@@ -64,7 +64,7 @@ public class CustomerRoute extends RouteBuilder {
             .loop(10)
                 .setBody(exchange -> new Customer(null, "Test"+(++i), r.nextInt(50000), 0))
                 .to("jpa:" + Customer.class.getName())
-                .log("Body: ${body}")
+                .log("Add: ${body}")
             .end();
     }
 
