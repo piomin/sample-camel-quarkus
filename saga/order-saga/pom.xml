@@ -44,6 +44,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+
+                </configuration>
             </plugin>
         </plugins>
     </build>

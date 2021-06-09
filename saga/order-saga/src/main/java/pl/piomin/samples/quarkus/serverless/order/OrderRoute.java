@@ -2,10 +2,9 @@ package pl.piomin.samples.quarkus.serverless.order;
 
 import lombok.*;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
-import org.apache.camel.spi.DataFormat;
+import org.hibernate.SessionFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,11 +13,11 @@ import java.io.Serializable;
 import java.util.List;
 
 // camel-k: trait=knative-service.enabled=true
-// camel-k: trait=quarkus.enabled=false
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2
 // camel-k: dependency=mvn:org.projectlombok:lombok:1.18.16
+// camel-k: build-property=quarkus.package.type=uber-jar
 
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
@@ -63,29 +62,28 @@ public class OrderRoute extends RouteBuilder {
         return order;
     }
 
-    @Entity
-    @Table(name = "orders")
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @ToString
-    class Order implements Serializable {
-
-        @Id
-        @GeneratedValue
-        private Long id;
-        private Integer customerId;
-        private Integer productId;
-        private int amount;
-        private int productCount;
-        @Enumerated
-        private OrderStatus status = OrderStatus.NEW;
-    }
-
-    enum OrderStatus {
-        NEW, REJECTED, CONFIRMED, IN_PROGRESS;
-    }
-
 }
 
+@Entity
+@Table(name = "orders")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+class Order implements Serializable {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+    private Integer customerId;
+    private Integer productId;
+    private int amount;
+    private int productCount;
+    @Enumerated
+    private OrderStatus status = OrderStatus.NEW;
+}
+
+enum OrderStatus {
+    NEW, REJECTED, CONFIRMED, IN_PROGRESS;
+}
