@@ -17,7 +17,6 @@ import java.util.List;
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2
 // camel-k: dependency=mvn:org.projectlombok:lombok:1.18.16
-// camel-k: build-property=quarkus.package.type=uber-jar
 
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
@@ -40,6 +39,7 @@ public class OrderRoute extends RouteBuilder {
                 .post("/confirm").consumes("application/json").type(Order.class)
                 .route()
                     .unmarshal(format)
+//                .unmarshal().json(JsonLibrary.Jackson, Data.class)
                     .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id= ${body.id}")
                     .log("Status: ${body[0].status.toString()}")
                     .choice()
