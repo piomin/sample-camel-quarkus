@@ -14,7 +14,6 @@
     <modules>
         <module>order-saga</module>
         <module>customer-saga</module>
-        <module>model-saga</module>
     </modules>
 
 </project>

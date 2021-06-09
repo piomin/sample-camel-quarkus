@@ -1,15 +1,12 @@
 package pl.piomin.samples.quarkus.serverless.order;
 
-import lombok.*;
+import com.github.piomin.entity.model.order.Order;
+import com.github.piomin.entity.model.order.OrderStatus;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
-import org.hibernate.SessionFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.*;
-import java.io.Serializable;
 import java.util.List;
 
 // camel-k: trait=knative-service.enabled=true
@@ -17,6 +14,7 @@ import java.util.List;
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2
 // camel-k: dependency=mvn:org.projectlombok:lombok:1.18.16
+// camel-k: dependency=github:piomin/entity-model/1.0-SNAPSHOT
 
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
@@ -62,28 +60,4 @@ public class OrderRoute extends RouteBuilder {
         return order;
     }
 
-}
-
-@Entity
-@Table(name = "orders")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-class Order implements Serializable {
-
-    @Id
-    @GeneratedValue
-    private Long id;
-    private Integer customerId;
-    private Integer productId;
-    private int amount;
-    private int productCount;
-    @Enumerated
-    private OrderStatus status = OrderStatus.NEW;
-}
-
-enum OrderStatus {
-    NEW, REJECTED, CONFIRMED, IN_PROGRESS;
 }
