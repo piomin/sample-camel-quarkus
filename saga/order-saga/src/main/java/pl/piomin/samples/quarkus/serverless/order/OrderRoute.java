@@ -24,6 +24,8 @@ public class OrderRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
+        Order o = new Order();
+
         from("timer:tick?period=10000")
                 .setBody(constant(new Order(null, (int) ++num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW)))
 //                .to("kafka:test?brokers=my-cluster-kafka-bootstrap.kafka:9092")
