@@ -1,16 +1,16 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: customer-saga-trigger
+  name: order-saga-trigger
 spec:
   broker: default
   filter:
     attributes:
       type: dev.knative.kafka.event
-      source: /apis/v1/namespaces/default/kafkasources/kafka-source-orders-customer#order-events
+      source: /apis/v1/namespaces/default/kafkasources/kafka-source-reserve-order#reserve-events
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
-      name: customer-saga
-    uri: /customers/reserve
+      name: order-saga
+    uri: /orders/confirm

@@ -5,6 +5,7 @@ import com.github.piomin.entity.model.order.OrderStatus;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.apache.camel.model.dataformat.JsonLibrary;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -24,36 +25,35 @@ public class OrderRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        Order o = new Order();
-
         from("timer:tick?period=10000")
-                .setBody(constant(new Order(null, (int) ++num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW)))
-//                .to("kafka:test?brokers=my-cluster-kafka-bootstrap.kafka:9092")
-                .to("jpa:" + Order.class.getName())
-                .log("Order id=${body.id}");
+            .setBody(exchange -> new Order(null, (int) ++num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW))
+            .to("jpa:" + Order.class.getName())
+            .marshal().json(JsonLibrary.Jackson)
+            .log("New Order: ${body}")
+            .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}");
 
         JacksonDataFormat format = new JacksonDataFormat();
         format.setUnmarshalType(Order.class);
 
         rest("/orders")
-                .post("/confirm").consumes("application/json").type(Order.class)
-                .route()
-                    .unmarshal(format)
-//                .unmarshal().json(JsonLibrary.Jackson, Data.class)
-                    .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id= ${body.id}")
-                    .log("Status: ${body[0].status.toString()}")
-                    .choice()
-                        .when().simple("${body[0].status.toString()} == 'NEW'")
-                            .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.IN_PROGRESS))
-                        .otherwise()
-                            .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.CONFIRMED))
-    //                    .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092")
-                    .end()
-                .log("Order: ${body}")
-                    .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
-                    .marshal(format)
-                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
-                .endRest();
+            .post("/confirm").consumes("application/json")//.type(Order.class)
+            .route()
+                .unmarshal().json(JsonLibrary.Jackson, Order.class)
+                .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id= ${body.id}")
+                .log("Found Order: ${body[0]}")
+                .choice()
+                    .when().simple("${body[0].status.toString()} == 'NEW'")
+                        .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.IN_PROGRESS))
+                    .otherwise()
+                        .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.CONFIRMED))
+                        .marshal().json(JsonLibrary.Jackson)
+                        .log("Order confirmed: ${body}")
+                        .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
+                .end()
+                .unmarshal().json(JsonLibrary.Jackson, Order.class)
+                .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201)).setBody(constant(null))
+        .endRest();
     }
 
     private Order updateOrderStatus(Exchange exchange, OrderStatus status) {

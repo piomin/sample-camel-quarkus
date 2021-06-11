@@ -1,7 +1,7 @@
 apiVersion: sources.knative.dev/v1beta1
 kind: KafkaSource
 metadata:
-  name: kafka-source-orders-confirm
+  name: kafka-source-reserve-order
 spec:
   bootstrapServers:
     - my-cluster-kafka-bootstrap.kafka:9092
@@ -9,7 +9,6 @@ spec:
     - reserve-events
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: order-saga
-    uri: /confirm
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default
