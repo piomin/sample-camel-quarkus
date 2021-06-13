@@ -9,6 +9,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
+import java.util.Random;
 
 // camel-k: trait=knative-service.enabled=true
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
@@ -21,12 +22,13 @@ import java.util.List;
 public class OrderRoute extends RouteBuilder {
 
     private static long num = 0;
+    private Random r = new Random();
 
     @Override
     public void configure() throws Exception {
 
         from("timer:tick?period=10000")
-            .setBody(exchange -> new Order(null, (int) ++num%10+1, (int) num%10+1, 100, 1, OrderStatus.NEW))
+            .setBody(exchange -> new Order(null, r.nextInt(10) + 1, r.nextInt(10) + 1, 100, 1, OrderStatus.NEW))
             .to("jpa:" + Order.class.getName())
             .marshal().json(JsonLibrary.Jackson)
             .log("New Order: ${body}")

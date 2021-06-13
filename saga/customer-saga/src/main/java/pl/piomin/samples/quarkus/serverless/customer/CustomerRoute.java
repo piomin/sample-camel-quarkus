@@ -17,7 +17,7 @@ public class CustomerRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         rest("/customers")
-            .post("/reserve").consumes("application/json")//.type(Order.class)
+            .post("/reserve").consumes("application/json")
             .route()
                 .log("Order received: ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, Order.class)
@@ -52,6 +52,7 @@ public class CustomerRoute extends RouteBuilder {
                     })
             .end()
             .log("Current customer: ${body}")
+            .to("jpa:" + Customer.class.getName() + "?useExecuteUpdate=true")
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201)).setBody(constant(null))
         .endRest();
 
