@@ -1,6 +1,5 @@
 package pl.piomin.samples.quarkus.serverless.stock;
 
-import com.github.piomin.entity.model.customer.Customer;
 import com.github.piomin.entity.model.product.Product;
 import lombok.Data;
 import org.apache.camel.Exchange;

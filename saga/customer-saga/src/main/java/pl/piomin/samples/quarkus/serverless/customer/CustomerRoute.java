@@ -29,8 +29,6 @@ public class CustomerRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         restConfiguration().bindingMode(RestBindingMode.json);
-        JacksonDataFormat format = new JacksonDataFormat();
-        format.setUnmarshalType(Order.class);
 
         rest("/customers")
             .post("/reserve").consumes("application/json").type(Order.class)

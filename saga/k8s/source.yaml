@@ -3,6 +3,7 @@ kind: KafkaSource
 metadata:
   name: kafka-source-orders
 spec:
+  consumerGroup: orders
   bootstrapServers:
     - my-cluster-kafka-bootstrap.kafka:9092
   topics:
