@@ -28,7 +28,7 @@ public class OrderRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         from("timer:tick?period=10000")
-            .setBody(exchange -> new Order(null, r.nextInt(10) + 1, r.nextInt(10) + 1, 100, 1, OrderStatus.NEW))
+            .setBody(exchange -> createOrder())
             .to("jpa:" + Order.class.getName())
             .marshal().json(JsonLibrary.Jackson)
             .log("New Order: ${body}")
@@ -64,4 +64,12 @@ public class OrderRoute extends RouteBuilder {
         return order;
     }
 
+    private Order createOrder() {
+        return new Order(null,
+                r.nextInt(10) + 1,
+                r.nextInt(10) + 1,
+                100,
+                1,
+                OrderStatus.NEW);
+    }
 }

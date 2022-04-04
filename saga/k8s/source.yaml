@@ -1,11 +1,12 @@
 apiVersion: sources.knative.dev/v1beta1
 kind: KafkaSource
 metadata:
-  name: kafka-source-reserve-order
+  name: kafka-source-orders
 spec:
   bootstrapServers:
     - my-cluster-kafka-bootstrap.kafka:9092
   topics:
+    - order-events
     - reserve-events
   sink:
     ref:

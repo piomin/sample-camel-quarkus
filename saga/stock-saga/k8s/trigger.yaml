@@ -7,7 +7,7 @@ spec:
   filter:
     attributes:
       type: dev.knative.kafka.event
-      source: /apis/v1/namespaces/camel/kafkasources/kafka-source-reserve-order#reserve-events
+      source: /apis/v1/namespaces/camel/kafkasources/kafka-source-orders#reserve-events
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1
