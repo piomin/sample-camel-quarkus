@@ -7,10 +7,10 @@ spec:
   filter:
     attributes:
       type: dev.knative.kafka.event
-      source: /apis/v1/namespaces/camel/kafkasources/kafka-source-orders#reserve-events
+      source: /apis/v1/namespaces/camel/kafkasources/kafka-source-orders#order-events
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
-      name: stock
+      name: stock-saga
     uri: /stock/reserve
