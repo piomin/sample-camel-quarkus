@@ -34,29 +34,21 @@ public class StockRoute extends RouteBuilder {
                 .post("/reserve").consumes("application/json").type(Order.class)
                 .route()
                     .log("Order received: ${body}")
-                    .choice()
-                        .when().simple("${body.status.toString()} == 'NEW'")
-                            .setBody(exchange -> {
-                                Order order = exchange.getIn().getBody(Order.class);
-                                order.setStatus(OrderStatus.IN_PROGRESS);
-                                return order;
-                            })
-                            .marshal(FORMAT)
-                            .log("Reservation sent: ${body}")
-                            .toD("kafka:reserve-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
-                    .end()
-                    .unmarshal(FORMAT)
+                    .setProperty("order", body())
                     .setProperty("orderItems", simple("${body.productCount}", Integer.class))
                     .setProperty("orderStatus", simple("${body.status}", OrderStatus.class))
                     .toD("jpa:" + Product.class.getName() + "?query=select p from Product p where p.id = ${body.productId}")
                     .choice()
-                        .when().simple("${exchangeProperty.orderStatus} == 'IN_PROGRESS'")
+                        .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getItemsAvailable()} >= ${exchangeProperty.orderItems}")
                             .setBody(exchange -> {
                                 Product product = (Product) exchange.getIn().getBody(List.class).get(0);
                                 product.setItemsReserved(product.getItemsReserved() + exchange.getProperty("orderItems", Integer.class));
                                 product.setItemsAvailable(product.getItemsAvailable() - exchange.getProperty("orderItems", Integer.class));
                                 return product;
-                            }).endChoice()
+                            }).setProperty("newStatus", constant("IN_PROGRESS")).endChoice()
+                        .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getItemsAvailable()} < ${exchangeProperty.orderItems}")
+                            .setBody(exchange -> exchange.getIn().getBody(List.class).get(0))
+                            .setProperty("newStatus", constant("REJECTED")).endChoice()
                         .otherwise()
                             .setBody(exchange -> {
                                 Product product = (Product) exchange.getIn().getBody(List.class).get(0);
@@ -66,6 +58,17 @@ public class StockRoute extends RouteBuilder {
                     .end()
                     .log("Current product: ${body}")
                     .to("jpa:" + Product.class.getName() + "?useExecuteUpdate=true")
+                    .choice()
+                        .when(simple("${exchangeProperty.newStatus} != null"))
+                        .setBody(exchange -> {
+                            Order o = exchange.getProperty("order", Order.class);
+                            o.setStatus(OrderStatus.valueOf(exchange.getProperty("newStatus").toString()));
+                            return o;
+                        })
+                        .log("Reservation sent: ${body}")
+                        .marshal(FORMAT)
+                        .toD("kafka:reserve-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
+                    .end()
                     .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
                     .setBody(constant(null))
                 .end()

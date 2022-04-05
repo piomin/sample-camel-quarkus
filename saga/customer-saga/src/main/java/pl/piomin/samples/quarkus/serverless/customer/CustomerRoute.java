@@ -34,29 +34,21 @@ public class CustomerRoute extends RouteBuilder {
             .post("/reserve").consumes("application/json").type(Order.class)
             .route()
                 .log("Order received: ${body}")
-                .choice()
-                    .when().simple("${body.status.toString()} == 'NEW'")
-                        .setBody(exchange -> {
-                            Order order = exchange.getIn().getBody(Order.class);
-                            order.setStatus(OrderStatus.IN_PROGRESS);
-                            return order;
-                        })
-                        .marshal(FORMAT)
-                        .log("Reservation sent: ${body}")
-                        .toD("kafka:reserve-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
-                .end()
-                .unmarshal(FORMAT)
+                .setProperty("order", body())
                 .setProperty("orderAmount", simple("${body.amount}", Integer.class))
                 .setProperty("orderStatus", simple("${body.status}", OrderStatus.class))
                 .toD("jpa:" + Customer.class.getName() + "?query=select c from Customer c where c.id = ${body.customerId}")
                 .choice()
-                    .when().simple("${exchangeProperty.orderStatus} == 'IN_PROGRESS'")
+                    .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} >= ${exchangeProperty.orderAmount}")
                         .setBody(exchange -> {
                             Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
                             customer.setAmountReserved(customer.getAmountReserved() + exchange.getProperty("orderAmount", Integer.class));
                             customer.setAmountAvailable(customer.getAmountAvailable() - exchange.getProperty("orderAmount", Integer.class));
                             return customer;
-                        }).endChoice()
+                        }).setProperty("newStatus", constant("IN_PROGRESS")).endChoice()
+                    .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} < ${exchangeProperty.orderAmount}")
+                        .setBody(exchange -> exchange.getIn().getBody(List.class).get(0))
+                        .setProperty("newStatus", constant("REJECTED")).endChoice()
                     .otherwise()
                         .setBody(exchange -> {
                             Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
@@ -66,6 +58,17 @@ public class CustomerRoute extends RouteBuilder {
                 .end()
                 .log("Current customer: ${body}")
                 .to("jpa:" + Customer.class.getName() + "?useExecuteUpdate=true")
+                .choice()
+                    .when(simple("${exchangeProperty.newStatus} != null"))
+                    .setBody(exchange -> {
+                        Order o = exchange.getProperty("order", Order.class);
+                        o.setStatus(OrderStatus.valueOf(exchange.getProperty("newStatus").toString()));
+                        return o;
+                    })
+                    .log("Reservation sent: ${body}")
+                    .marshal(FORMAT)
+                    .toD("kafka:reserve-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
+                .end()
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
                 .setBody(constant(null))
             .end()

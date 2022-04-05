@@ -21,8 +21,8 @@ import java.util.Random;
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
 
-    private static long num = 0;
-    private Random r = new Random();
+    private static long NUM = 0;
+    private Random RAND = new Random();
     private final JacksonDataFormat FORMAT = new JacksonDataFormat(Order.class);
 
     @Override
@@ -40,16 +40,22 @@ public class OrderRoute extends RouteBuilder {
         rest("/orders")
             .post("/confirm").consumes("application/json").type(Order.class)
             .route()
+                .log("Reservation received: ${body}")
+                .setProperty("order", body())
                 .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id = ${body.id}")
                 .log("Found order: ${body[0]}")
                 .choice()
                     .when().simple("${body[0].status.toString()} == 'NEW'")
-                        .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.IN_PROGRESS))
+                        .setBody(exchange -> {
+                            Order order = (Order) exchange.getIn().getBody(List.class).get(0);
+                            order.setStatus(exchange.getProperty("order", Order.class).getStatus());
+                            return order;
+                        })
                         .endChoice()
                     .otherwise()
-                        .setBody(exchange -> updateOrderStatus(exchange, OrderStatus.CONFIRMED))
-                        .marshal(FORMAT)
+                        .setBody(this::updateOrderStatus)
                         .log("Order confirmed: ${body}")
+                        .marshal(FORMAT)
                         .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
                         .unmarshal(FORMAT)
                 .end()
@@ -60,16 +66,19 @@ public class OrderRoute extends RouteBuilder {
         .endRest();
     }
 
-    private Order updateOrderStatus(Exchange exchange, OrderStatus status) {
+    private Order updateOrderStatus(Exchange exchange) {
+        OrderStatus status = exchange.getProperty("order", Order.class).getStatus();
         Order order = (Order) exchange.getIn().getBody(List.class).get(0);
-        order.setStatus(status);
+        if (order.getStatus() == OrderStatus.IN_PROGRESS) {
+            order.setStatus(status);
+        }
         return order;
     }
 
     private Order createOrder() {
         return new Order(null,
-                r.nextInt(10) + 1,
-                r.nextInt(10) + 1,
+                RAND.nextInt(10) + 1,
+                RAND.nextInt(10) + 1,
                 100,
                 1,
                 OrderStatus.NEW);
