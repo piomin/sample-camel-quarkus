@@ -11,12 +11,12 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Random;
 
-// camel-k: trait=knative-service.enabled=true
+
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-postgresql
 // camel-k: dependency=mvn:org.projectlombok:lombok:1.18.22
-// camel-k: dependency=github:piomin/entity-model/1.1
+// camel-k: dependency=github:piomin/entity-model/1.3
 
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
@@ -29,21 +29,14 @@ public class OrderRoute extends RouteBuilder {
     public void configure() throws Exception {
         restConfiguration().bindingMode(RestBindingMode.json);
 
-        from("timer:tick?period=10000")
-            .setBody(exchange -> createOrder())
-            .to("jpa:" + Order.class.getName())
-            .marshal(FORMAT)
-            .log("New Order: ${body}")
-            .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}");
+
 
 
         rest("/orders")
-            .post("/confirm").consumes("application/json").type(Order.class)
+            .post("/confirm").type(Order.class)
             .route()
-                .log("Reservation received: ${body}")
-                .setProperty("order", body())
-                .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id = ${body.id}")
-                .log("Found order: ${body[0]}")
+                .filter(exchange -> exchange.getIn().getBody() != null && ((Order) exchange.getIn().getBody()).getId() != null)
+
                 .choice()
                     .when().simple("${body[0].status.toString()} == 'NEW'")
                         .setBody(exchange -> {
@@ -55,9 +48,7 @@ public class OrderRoute extends RouteBuilder {
                     .otherwise()
                         .setBody(this::updateOrderStatus)
                         .log("Order confirmed: ${body}")
-                        .marshal(FORMAT)
-                        .toD("kafka:order-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
-                        .unmarshal(FORMAT)
+
                 .end()
                 .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
@@ -81,6 +72,6 @@ public class OrderRoute extends RouteBuilder {
                 RAND.nextInt(10) + 1,
                 100,
                 1,
-                OrderStatus.NEW);
+                OrderStatus.NEW, null, null);
     }
 }

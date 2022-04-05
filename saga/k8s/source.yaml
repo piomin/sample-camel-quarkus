@@ -1,7 +1,7 @@
 apiVersion: sources.knative.dev/v1beta1
 kind: KafkaSource
 metadata:
-  name: kafka-source-orders
+  name: kafka-source-to-broker
 spec:
   consumerGroup: orders
   bootstrapServers:
