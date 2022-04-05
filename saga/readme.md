@@ -25,9 +25,12 @@
 ```
 
 ```shell
-$ kamel run --name order-saga src/main/java/pl/piomin/samples/quarkus/serverless/order/OrderRoute.java --build-property file:src/main/resources/quarkus.properties --dev
+$ kamel run --name order-saga \
+  src/main/java/pl/piomin/samples/quarkus/serverless/order/OrderRoute.java \
+  --build-property file:src/main/resources/quarkus.properties --dev
 ```
 
 ```shell
-curl https://order-saga-camel.apps.cluster-7h2ls.7h2ls.sandbox1025.opentlc.com/orders/confirm -H "Content-Type:application/json" -d "{\"id\":1,\"status\":\"IN_PROGRESS\"}" -v
+curl https://order-saga-camel.apps.cluster-7h2ls.7h2ls.sandbox1025.opentlc.com/orders/confirm \
+  -H "Content-Type:application/json" -d "{\"id\":1,\"status\":\"IN_PROGRESS\"}" -v
 ```
