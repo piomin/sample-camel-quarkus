@@ -32,7 +32,7 @@ public class AccountRoute extends RouteBuilder {
 				.get("/customer/{customerId}")
 					.route().bean(accountService, "findByCustomerId(${header.customerId})").endRest()
 				.get().route().bean(accountService, "findAll").endRest()
-				.post("/")
+				.post()
 					.consumes("application/json").type(Account.class)
 					.route().bean(accountService, "add(${body})").endRest();
 	}
@@ -41,7 +41,7 @@ public class AccountRoute extends RouteBuilder {
 	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor
-	public class Account {
+	public static class Account {
 		private Integer id;
 		private String number;
 		private int amount;

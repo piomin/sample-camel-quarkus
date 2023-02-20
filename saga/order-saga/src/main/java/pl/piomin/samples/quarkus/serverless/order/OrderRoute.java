@@ -11,7 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Random;
 
-
+// camel-k: trait=knative-service.enabled=true
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-postgresql
@@ -29,14 +29,22 @@ public class OrderRoute extends RouteBuilder {
     public void configure() throws Exception {
         restConfiguration().bindingMode(RestBindingMode.json);
 
-
+        from("timer:tick?period=10000")
+                .setBody(exchange -> createOrder())
+                .to("jpa:" + Order.class.getName())
+                .marshal(FORMAT)
+                .log("New order: ${body}")
+                .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092");
 
 
         rest("/orders")
             .post("/confirm").type(Order.class)
             .route()
                 .filter(exchange -> exchange.getIn().getBody() != null && ((Order) exchange.getIn().getBody()).getId() != null)
-
+                .log("Reservation: ${body}")
+                .setProperty("order", body())
+                .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id = ${body.id}")
+                .log("Found order: ${body[0]}")
                 .choice()
                     .when().simple("${body[0].status.toString()} == 'NEW'")
                         .setBody(exchange -> {
@@ -48,7 +56,9 @@ public class OrderRoute extends RouteBuilder {
                     .otherwise()
                         .setBody(this::updateOrderStatus)
                         .log("Order confirmed: ${body}")
-
+                        .marshal(FORMAT)
+                        .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092")
+                        .unmarshal(FORMAT)
                 .end()
                 .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
