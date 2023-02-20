@@ -12,6 +12,7 @@
     <artifactId>stock-saga</artifactId>
 
     <properties>
+        <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
         <camel-quarkus.version>2.7.0</camel-quarkus.version>
         <quarkus.version>2.7.0.Final</quarkus.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,6 +99,16 @@
             <groupId>com.github.piomin</groupId>
             <artifactId>entity-model</artifactId>
             <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
