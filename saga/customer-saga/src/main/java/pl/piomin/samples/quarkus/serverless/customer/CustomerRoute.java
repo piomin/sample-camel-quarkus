@@ -67,7 +67,7 @@ public class CustomerRoute extends RouteBuilder {
                     })
                     .log("Reservation sent: ${body}")
                     .marshal(FORMAT)
-                    .toD("kafka:reserve-events?brokers=${env.KAFKA_BOOTSTRAP_SERVERS}")
+                    .toD("kafka:reserve-events")
                 .end()
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
                 .setBody(constant(null))
@@ -77,7 +77,7 @@ public class CustomerRoute extends RouteBuilder {
         Random r = new Random();
         from("timer://runOnce?repeatCount=1&delay=100")
             .loop(10)
-                .setBody(exchange -> new Customer(null, "Test"+(++i), r.nextInt(50000), 0))
+                .setBody(exchange -> new Customer(null, "Test"+(++i), r.nextInt(500, 50000), 0))
                 .to("jpa:" + Customer.class.getName())
                 .log("Add: ${body}")
             .end();
