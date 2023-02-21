@@ -34,7 +34,7 @@ public class OrderRoute extends RouteBuilder {
                 .to("jpa:" + Order.class.getName())
                 .marshal(FORMAT)
                 .log("New order: ${body}")
-                .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092");
+                .to("kafka:order-events");
 
 
         rest("/orders")
@@ -57,7 +57,7 @@ public class OrderRoute extends RouteBuilder {
                         .setBody(this::updateOrderStatus)
                         .log("Order confirmed: ${body}")
                         .marshal(FORMAT)
-                        .to("kafka:order-events?brokers=my-cluster-kafka-bootstrap.kafka:9092")
+                        .to("kafka:order-events")
                         .unmarshal(FORMAT)
                 .end()
                 .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")

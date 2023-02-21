@@ -17,8 +17,26 @@
 		<sonar.projectKey>piomin_sample-camel-quarkus</sonar.projectKey>
 		<sonar.organization>piomin</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<entity-model.version>1.3</entity-model.version>
 		<lombok.version>1.18.26</lombok.version>
+		<camel-quarkus.version>2.7.0</camel-quarkus.version>
+		<quarkus.version>2.7.0.Final</quarkus.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.apache.camel.quarkus</groupId>
+				<artifactId>camel-quarkus-bom</artifactId>
+				<version>${camel-quarkus.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<repositories>
 		<repository>
