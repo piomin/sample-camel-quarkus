@@ -32,47 +32,48 @@ public class CustomerRoute extends RouteBuilder {
 
         rest("/customers")
             .post("/reserve").consumes("application/json").type(Order.class)
-            .route()
-                .log("Order received: ${body}")
-                .setProperty("order", body())
-                .setProperty("orderAmount", simple("${body.amount}", Integer.class))
-                .setProperty("orderStatus", simple("${body.status}", OrderStatus.class))
-                .toD("jpa:" + Customer.class.getName() + "?query=select c from Customer c where c.id = ${body.customerId}")
-                .choice()
-                    .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} >= ${exchangeProperty.orderAmount}")
-                        .setBody(exchange -> {
-                            Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
-                            customer.setAmountReserved(customer.getAmountReserved() + exchange.getProperty("orderAmount", Integer.class));
-                            customer.setAmountAvailable(customer.getAmountAvailable() - exchange.getProperty("orderAmount", Integer.class));
-                            return customer;
-                        }).setProperty("newStatus", constant("IN_PROGRESS")).endChoice()
-                    .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} < ${exchangeProperty.orderAmount}")
-                        .setBody(exchange -> exchange.getIn().getBody(List.class).get(0))
-                        .setProperty("newStatus", constant("REJECTED")).endChoice()
-                    .otherwise()
-                        .setBody(exchange -> {
-                            Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
-                            customer.setAmountReserved(customer.getAmountReserved() - exchange.getProperty("orderAmount", Integer.class));
-                            return customer;
-                        })
-                .end()
-                .log("Current customer: ${body}")
-                .to("jpa:" + Customer.class.getName() + "?useExecuteUpdate=true")
-                .choice()
-                    .when(simple("${exchangeProperty.newStatus} != null"))
+            .to("direct:reserve");
+
+        from("direct:reserve")
+            .log("Order received: ${body}")
+            .setProperty("order", body())
+            .setProperty("orderAmount", simple("${body.amount}", Integer.class))
+            .setProperty("orderStatus", simple("${body.status}", OrderStatus.class))
+            .toD("jpa:" + Customer.class.getName() + "?query=select c from Customer c where c.id = ${body.customerId}")
+            .choice()
+                .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} >= ${exchangeProperty.orderAmount}")
                     .setBody(exchange -> {
-                        Order o = exchange.getProperty("order", Order.class);
-                        o.setStatus(OrderStatus.valueOf(exchange.getProperty("newStatus").toString()));
-                        return o;
+                        Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
+                        customer.setAmountReserved(customer.getAmountReserved() + exchange.getProperty("orderAmount", Integer.class));
+                        customer.setAmountAvailable(customer.getAmountAvailable() - exchange.getProperty("orderAmount", Integer.class));
+                        return customer;
+                    }).setProperty("newStatus", constant("IN_PROGRESS")).endChoice()
+                .when().simple("${exchangeProperty.orderStatus} == 'NEW' && ${body[0].getAmountAvailable()} < ${exchangeProperty.orderAmount}")
+                    .setBody(exchange -> exchange.getIn().getBody(List.class).get(0))
+                    .setProperty("newStatus", constant("REJECTED")).endChoice()
+                .otherwise()
+                    .setBody(exchange -> {
+                        Customer customer = (Customer) exchange.getIn().getBody(List.class).get(0);
+                        customer.setAmountReserved(customer.getAmountReserved() - exchange.getProperty("orderAmount", Integer.class));
+                        return customer;
                     })
-                    .log("Reservation sent: ${body}")
-                    .marshal(FORMAT)
-                    .toD("kafka:reserve-events")
-                .end()
-                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
-                .setBody(constant(null))
             .end()
-        .endRest();
+            .log("Current customer: ${body}")
+            .to("jpa:" + Customer.class.getName() + "?useExecuteUpdate=true")
+            .choice()
+                .when(simple("${exchangeProperty.newStatus} != null"))
+                .setBody(exchange -> {
+                    Order o = exchange.getProperty("order", Order.class);
+                    o.setStatus(OrderStatus.valueOf(exchange.getProperty("newStatus").toString()));
+                    return o;
+                })
+                .log("Reservation sent: ${body}")
+                .marshal(FORMAT)
+                .toD("kafka:reserve-events")
+            .end()
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
+            .setBody(constant(null))
+        .end();
 
         Random r = new Random();
         from("timer://runOnce?repeatCount=1&delay=100")

@@ -27,14 +27,17 @@ public class AccountRoute extends RouteBuilder {
 		restConfiguration().bindingMode(RestBindingMode.json);
 
 		rest("/accounts")
-				.get("/{id}")
-					.route().bean(accountService, "findById(${header.id})").endRest()
-				.get("/customer/{customerId}")
-					.route().bean(accountService, "findByCustomerId(${header.customerId})").endRest()
-				.get().route().bean(accountService, "findAll").endRest()
+				.get("/{id}").to("direct:findById")
+				.get("/customer/{customerId}").to("direct:findByCustomerId")
+				.get().to("direct:findAll")
 				.post()
 					.consumes("application/json").type(Account.class)
-					.route().bean(accountService, "add(${body})").endRest();
+					.to("direct:add");
+
+		from("direct:findById").bean(accountService, "findById(${header.id})");
+		from("direct:findByCustomerId").bean(accountService, "findByCustomerId(${header.customerId})");
+		from("direct:findAll").bean(accountService, "findAll");
+		from("direct:add").bean(accountService, "add(${body})");
 	}
 
 	@Getter
