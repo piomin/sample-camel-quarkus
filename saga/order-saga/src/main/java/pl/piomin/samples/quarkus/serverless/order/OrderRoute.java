@@ -39,32 +39,33 @@ public class OrderRoute extends RouteBuilder {
 
         rest("/orders")
             .post("/confirm").type(Order.class)
-            .route()
-                .filter(exchange -> exchange.getIn().getBody() != null && ((Order) exchange.getIn().getBody()).getId() != null)
-                .log("Reservation: ${body}")
-                .setProperty("order", body())
-                .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id = ${body.id}")
-                .log("Found order: ${body[0]}")
-                .choice()
-                    .when().simple("${body[0].status.toString()} == 'NEW'")
-                        .setBody(exchange -> {
-                            Order order = (Order) exchange.getIn().getBody(List.class).get(0);
-                            order.setStatus(exchange.getProperty("order", Order.class).getStatus());
-                            return order;
-                        })
-                        .endChoice()
-                    .otherwise()
-                        .setBody(this::updateOrderStatus)
-                        .log("Order confirmed: ${body}")
-                        .marshal(FORMAT)
-                        .to("kafka:order-events")
-                        .unmarshal(FORMAT)
-                .end()
-                .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
-                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
-                .setBody(constant(null))
+            .to("direct:confirm");
+
+        from("direct:confirm")
+            .filter(exchange -> exchange.getIn().getBody() != null && ((Order) exchange.getIn().getBody()).getId() != null)
+            .log("Reservation: ${body}")
+            .setProperty("order", body())
+            .toD("jpa:" + Order.class.getName() + "?query=select o from Order o where o.id = ${body.id}")
+            .log("Found order: ${body[0]}")
+            .choice()
+                .when().simple("${body[0].status.toString()} == 'NEW'")
+                    .setBody(exchange -> {
+                        Order order = (Order) exchange.getIn().getBody(List.class).get(0);
+                        order.setStatus(exchange.getProperty("order", Order.class).getStatus());
+                        return order;
+                    })
+                    .endChoice()
+                .otherwise()
+                    .setBody(this::updateOrderStatus)
+                    .log("Order confirmed: ${body}")
+                    .marshal(FORMAT)
+                    .to("kafka:order-events")
+                    .unmarshal(FORMAT)
             .end()
-        .endRest();
+            .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(201))
+            .setBody(constant(null))
+        .end();
     }
 
     private Order updateOrderStatus(Exchange exchange) {
