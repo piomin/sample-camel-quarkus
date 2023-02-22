@@ -14,6 +14,7 @@ import java.util.Random;
 
 // camel-k: trait=knative-service.enabled=true
 // camel-k: trait=quarkus.enabled=true
+// camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-core
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
 // camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2

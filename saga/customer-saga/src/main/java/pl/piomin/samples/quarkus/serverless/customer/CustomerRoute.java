@@ -16,9 +16,9 @@ import java.util.Random;
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-core
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
-// camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-postgresql
-// camel-k: dependency=mvn:org.projectlombok:lombok:1.18.22
-// camel-k: dependency=github:piomin/entity-model/1.1
+// camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2
+// camel-k: dependency=mvn:org.projectlombok:lombok:1.18.26
+// camel-k: dependency=github:piomin/entity-model/1.3
 
 @ApplicationScoped
 public class CustomerRoute extends RouteBuilder {
