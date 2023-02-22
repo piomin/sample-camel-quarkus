@@ -6,17 +6,23 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Random;
 
 // camel-k: trait=knative-service.enabled=true
+// camel-k: trait=quarkus.enabled=true
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jpa
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-jackson
-// camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-postgresql
-// camel-k: dependency=mvn:org.projectlombok:lombok:1.18.22
+// camel-k: dependency=mvn:io.quarkus:quarkus-jdbc-h2
+// camel-k: dependency=mvn:org.projectlombok:lombok:1.18.26
 // camel-k: dependency=github:piomin/entity-model/1.3
+// camel-k: property=kafka.server=my-cluster-kafka-bootstrap.kafka:9092
+// camel-k: property=quarkus.datasource.db-kind=h2
+// camel-k: property=quarkus.datasource.jdbc.url=jdbc:h2:mem:testdb
+// camel-k: property=quarkus.hibernate-orm.packages=com.github.piomin.entity.model.order
 
 @ApplicationScoped
 public class OrderRoute extends RouteBuilder {
@@ -27,6 +33,8 @@ public class OrderRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        String kafkaUrl = ConfigProvider.getConfig().getValue("kafka.server", String.class);
+
         restConfiguration().bindingMode(RestBindingMode.json);
 
         from("timer:tick?period=10000")
@@ -34,7 +42,7 @@ public class OrderRoute extends RouteBuilder {
                 .to("jpa:" + Order.class.getName())
                 .marshal(FORMAT)
                 .log("New order: ${body}")
-                .to("kafka:order-events");
+                .to("kafka:order-events?brokers=" + kafkaUrl);
 
 
         rest("/orders")
@@ -59,7 +67,7 @@ public class OrderRoute extends RouteBuilder {
                     .setBody(this::updateOrderStatus)
                     .log("Order confirmed: ${body}")
                     .marshal(FORMAT)
-                    .to("kafka:order-events")
+                    .to("kafka:order-events?brokers=" + kafkaUrl)
                     .unmarshal(FORMAT)
             .end()
             .to("jpa:" + Order.class.getName() + "?useExecuteUpdate=true")
