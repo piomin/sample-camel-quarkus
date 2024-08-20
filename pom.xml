@@ -19,7 +19,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <entity-model.version>1.4.1</entity-model.version>
         <lombok.version>1.18.34</lombok.version>
-        <quarkus.version>3.13.2</quarkus.version>
+        <quarkus.version>3.13.3</quarkus.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
