@@ -10,6 +10,7 @@ import org.apache.camel.model.rest.RestBindingMode;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 // camel-k: trait=knative-service.enabled=true
@@ -86,7 +87,6 @@ public class CustomerRoute extends RouteBuilder {
 
 }
 
-@Data
 class Order implements Serializable {
     private Long id;
     private Long customerId;
@@ -94,6 +94,70 @@ class Order implements Serializable {
     private OrderStatus status;
     private Long productId;
     private int productCount;
+
+    public Order() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Order order = (Order) o;
+        return Objects.equals(id, order.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
 
 enum OrderStatus {

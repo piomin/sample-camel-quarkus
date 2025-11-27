@@ -1,10 +1,6 @@
 package pl.piomin.samples.quarkus.account.route;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 
@@ -38,15 +34,53 @@ public class AccountRoute extends RouteBuilder {
         from("direct:add").bean(accountService, "add(${body})");
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class Account {
         private Integer id;
         private String number;
         private int amount;
         private Integer customerId;
+
+        public Account() {
+        }
+
+        public Account(Integer id, String number, int amount, Integer customerId) {
+            this.id = id;
+            this.number = number;
+            this.amount = amount;
+            this.customerId = customerId;
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getNumber() {
+            return number;
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+        }
+
+        public int getAmount() {
+            return amount;
+        }
+
+        public void setAmount(int amount) {
+            this.amount = amount;
+        }
+
+        public Integer getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(Integer customerId) {
+            this.customerId = customerId;
+        }
     }
 
     public class AccountService {
