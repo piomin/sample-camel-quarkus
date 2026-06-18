@@ -30,6 +30,7 @@ public class ApiRoute extends RouteBuilder {
                 .bindingMode(RestBindingMode.json);
 
         rest("/persons")
+                .security("SecurityScheme")
                 .get()
                     .description("Get all persons")
                     .to("direct:getPersons")
