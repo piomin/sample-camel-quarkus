@@ -2,6 +2,7 @@ package pl.piomin.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import pl.piomin.services.model.Person;
@@ -16,12 +17,19 @@ public class ApiRoute extends RouteBuilder {
     @Override
     public void configure() {
 
+        interceptFrom()
+                .log(LoggingLevel.INFO, "pl.piomin.services.ApiRoute",
+                        ">>> [${header.CamelHttpMethod}] ${header.CamelHttpUri} body=${body}");
+
+        onCompletion()
+                .log(LoggingLevel.INFO, "pl.piomin.services.ApiRoute",
+                        "<<< response body=${body}");
+
         restConfiguration()
                 .component("platform-http")
                 .bindingMode(RestBindingMode.json);
 
         rest("/persons")
-                .get()
                     .description("Get all persons")
                     .to("direct:getPersons")
                 .get("/{id}")
