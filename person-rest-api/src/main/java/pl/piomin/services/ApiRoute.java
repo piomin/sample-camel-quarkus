@@ -50,18 +50,23 @@ public class ApiRoute extends RouteBuilder {
                     .to("direct:deletePerson");
 
         from("direct:getPersons")
+                .routeId("getPersons")
                 .bean(personService, "findAll");
 
         from("direct:getPersonById")
+                .routeId("getPersonById")
                 .bean(personService, "findById");
 
         from("direct:createPerson")
+                .routeId("createPerson")
                 .bean(personService, "create");
 
         from("direct:updatePerson")
+                .routeId("updatePerson")
                 .bean(personService, "update");
 
         from("direct:deletePerson")
+                .routeId("deletePerson")
                 .bean(personService, "delete");
     }
 }
