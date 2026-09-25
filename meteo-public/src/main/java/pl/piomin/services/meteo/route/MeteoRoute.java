@@ -13,6 +13,8 @@ import pl.piomin.services.meteo.model.geocoding.GeocodingResponse;
 import pl.piomin.services.meteo.model.weather.WeatherResponse;
 import pl.piomin.services.meteo.service.MeteoService;
 
+import java.util.Random;
+
 @ApplicationScoped
 public class MeteoRoute extends RouteBuilder {
 
@@ -21,6 +23,11 @@ public class MeteoRoute extends RouteBuilder {
 
     @Override
     public void configure() {
+        interceptSendToEndpoint("https://air-quality-api.open-meteo.com/*")
+                .process(exchange -> {
+                    Thread.sleep(new Random().nextInt(200, 2000));
+                });
+
         restConfiguration()
             .component("platform-http")
             .bindingMode(RestBindingMode.json);
@@ -79,5 +86,6 @@ public class MeteoRoute extends RouteBuilder {
             .setBody(constant(""))
             .to("https://api.open-meteo.com/v1/forecast?bridgeEndpoint=true")
             .unmarshal(new JacksonDataFormat(WeatherResponse.class));
+
     }
 }
