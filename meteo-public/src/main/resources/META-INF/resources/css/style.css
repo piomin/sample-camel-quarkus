@@ -183,6 +183,26 @@ button.loading .spinner { display: inline-block; }
 
 footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: 0.8rem; text-shadow: 0 1px 6px #000; }
 
+/* ---------- compact layout once results are shown, so everything fits on one screen ---------- */
+body.has-result .app { padding-top: 14px; padding-bottom: 12px; }
+body.has-result .hero { margin-bottom: 12px; }
+body.has-result .hat { width: 54px; animation: none; }
+body.has-result .hero h1 { margin: 2px 0 0; font-size: 1.9rem; }
+body.has-result .tagline { display: none; }
+body.has-result .search { padding: 14px 16px; }
+body.has-result .field input { padding: 9px 12px; }
+body.has-result button { padding: 10px 20px; }
+body.has-result .result { margin-top: 12px; }
+body.has-result .summary { padding: 14px 20px; gap: 20px; }
+body.has-result .grade { width: 92px; height: 92px; font-size: 2.2rem; }
+body.has-result .summary-text h2 { font-size: 1.4rem; margin-bottom: 2px; }
+body.has-result .summary-text p { font-size: 1rem; margin-bottom: 2px; }
+body.has-result .cards { gap: 10px; margin-top: 10px; }
+body.has-result .card { padding: 12px 16px 14px; }
+body.has-result .card-value { margin: 4px 0 0; font-size: 1.8rem; }
+body.has-result .card-note { margin-bottom: 10px; font-size: 0.9rem; }
+body.has-result footer { margin-top: 12px; }
+
 @media (max-width: 680px) {
   .search { grid-template-columns: 1fr; }
   .summary { flex-direction: column; text-align: center; }

@@ -112,12 +112,14 @@
     const cards = document.getElementById('cards');
     cards.replaceChildren(...buildCards(r).map(renderCard));
     resultBox.hidden = false;
+    document.body.classList.add('has-result');
   };
 
   const showError = message => {
     errorBox.textContent = message;
     errorBox.hidden = false;
     resultBox.hidden = true;
+    document.body.classList.remove('has-result');
   };
 
   const errorMessage = async response => {

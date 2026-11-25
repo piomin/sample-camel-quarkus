@@ -72,7 +72,7 @@
   </g>
 
   <!-- runner wearing a red hat -->
-  <g transform="translate(330 0)" stroke="#000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <g transform="translate(140 0)" stroke="#000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
     <circle cx="0" cy="668" r="19" fill="#000" stroke="none"/>
     <line x1="-4" y1="690" x2="-22" y2="752"/>
     <polyline points="-6,700 24,722 52,706"/>
@@ -80,7 +80,7 @@
     <polyline points="-22,752 14,776 4,812"/>
     <polyline points="-22,752 -58,770 -92,758"/>
   </g>
-  <g transform="translate(330 0)">
+  <g transform="translate(140 0)">
     <ellipse cx="0" cy="654" rx="34" ry="8" fill="#ee0000"/>
     <path d="M-20 654 Q-20 622 0 622 Q20 622 20 654 Z" fill="#ee0000"/>
     <path d="M-20 650 H20 V644 H-20 Z" fill="#000"/>
@@ -88,7 +88,7 @@
 
   <!-- speed lines -->
   <g stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.35">
-    <line x1="150" y1="700" x2="230" y2="700"/><line x1="180" y1="730" x2="250" y2="730"/>
-    <line x1="140" y1="760" x2="215" y2="760"/>
+    <line x1="0" y1="700" x2="30" y2="700"/><line x1="0" y1="730" x2="24" y2="730"/>
+    <line x1="0" y1="760" x2="20" y2="760"/>
   </g>
 </svg>
