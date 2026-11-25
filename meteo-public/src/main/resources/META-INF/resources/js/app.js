@@ -100,14 +100,16 @@
     return root;
   };
 
-  const render = r => {
+  const formatDuration = ms => (ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(2)} s`);
+
+  const render = (r, elapsedMs) => {
     const grade = document.getElementById('grade');
     grade.textContent = r.rating;
     grade.style.setProperty('--c', LEVEL_COLORS[gradeLevel(r.rating)]);
 
     document.getElementById('place').textContent = `${r.city}, ${r.country.toUpperCase()}`;
     document.getElementById('verdict').textContent = r.description;
-    document.getElementById('coords').textContent = `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`;
+    document.getElementById('coords').textContent = `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}  ·  ⏱ POST /rating took ${formatDuration(elapsedMs)}`;
 
     const cards = document.getElementById('cards');
     cards.replaceChildren(...buildCards(r).map(renderCard));
@@ -135,6 +137,7 @@
     submit.classList.add('loading');
 
     try {
+      const startedAt = performance.now();
       const response = await fetch('/rating', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -149,11 +152,12 @@
       }
       // An unknown city makes the route fail, but the response is still 200 with an empty body
       const text = await response.text();
+      const elapsedMs = performance.now() - startedAt;
       if (!text.trim()) {
         showError('City not found. Check the city name and country code.');
         return;
       }
-      render(JSON.parse(text));
+      render(JSON.parse(text), elapsedMs);
     } catch (e) {
       showError('Cannot reach the server. Please try again.');
     } finally {
