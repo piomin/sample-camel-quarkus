@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0b14"/>
+      <stop offset="0.45" stop-color="#2a0f1f"/>
+      <stop offset="0.8" stop-color="#8a1620"/>
+      <stop offset="1" stop-color="#ee0000"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff6a3d" stop-opacity="0.95"/>
+      <stop offset="0.6" stop-color="#ee0000" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ee0000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a22"/>
+      <stop offset="1" stop-color="#050508"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+
+  <!-- stars -->
+  <g fill="#fff" opacity="0.7">
+    <circle cx="140" cy="90" r="1.5"/><circle cx="320" cy="170" r="1"/><circle cx="520" cy="60" r="1.5"/>
+    <circle cx="760" cy="130" r="1"/><circle cx="980" cy="70" r="1.5"/><circle cx="1180" cy="160" r="1"/>
+    <circle cx="1380" cy="80" r="1.5"/><circle cx="1500" cy="200" r="1"/><circle cx="60" cy="240" r="1"/>
+  </g>
+
+  <!-- sun glow -->
+  <circle cx="1180" cy="640" r="320" fill="url(#sun)"/>
+  <circle cx="1180" cy="640" r="95" fill="#ff8a4d" opacity="0.9"/>
+
+  <!-- far skyline -->
+  <g fill="#3a0c18" opacity="0.9">
+    <rect x="0" y="560" width="90" height="240"/><rect x="90" y="520" width="70" height="280"/>
+    <rect x="160" y="580" width="110" height="220"/><rect x="270" y="500" width="60" height="300"/>
+    <rect x="330" y="560" width="100" height="240"/><rect x="430" y="530" width="80" height="270"/>
+    <rect x="510" y="590" width="120" height="210"/><rect x="630" y="510" width="70" height="290"/>
+    <rect x="700" y="570" width="90" height="230"/><rect x="790" y="540" width="110" height="260"/>
+    <rect x="900" y="590" width="80" height="210"/><rect x="980" y="520" width="70" height="280"/>
+    <rect x="1050" y="570" width="120" height="230"/><rect x="1170" y="540" width="80" height="260"/>
+    <rect x="1250" y="590" width="100" height="210"/><rect x="1350" y="510" width="70" height="290"/>
+    <rect x="1420" y="560" width="180" height="240"/>
+  </g>
+
+  <!-- near skyline -->
+  <g fill="#14070d">
+    <rect x="0" y="620" width="120" height="200"/><rect x="120" y="570" width="80" height="250"/>
+    <polygon points="200,820 200,540 240,470 280,540 280,820"/>
+    <rect x="280" y="610" width="130" height="210"/><rect x="410" y="560" width="90" height="260"/>
+    <rect x="500" y="630" width="140" height="190"/><rect x="640" y="580" width="70" height="240"/>
+    <rect x="710" y="540" width="100" height="280"/><rect x="810" y="620" width="120" height="200"/>
+    <rect x="930" y="570" width="90" height="250"/><rect x="1020" y="630" width="130" height="190"/>
+    <rect x="1150" y="550" width="80" height="270"/><rect x="1230" y="610" width="110" height="210"/>
+    <rect x="1340" y="570" width="90" height="250"/><rect x="1430" y="630" width="170" height="190"/>
+  </g>
+
+  <!-- lit windows -->
+  <g fill="#ffd27a" opacity="0.75">
+    <rect x="135" y="600" width="8" height="10"/><rect x="155" y="640" width="8" height="10"/>
+    <rect x="425" y="590" width="8" height="10"/><rect x="455" y="650" width="8" height="10"/>
+    <rect x="725" y="580" width="8" height="10"/><rect x="765" y="640" width="8" height="10"/>
+    <rect x="945" y="600" width="8" height="10"/><rect x="1165" y="590" width="8" height="10"/>
+    <rect x="1355" y="610" width="8" height="10"/><rect x="1380" y="670" width="8" height="10"/>
+    <rect x="215" y="600" width="8" height="10"/><rect x="520" y="670" width="8" height="10"/>
+  </g>
+
+  <!-- road -->
+  <rect x="0" y="820" width="1600" height="80" fill="url(#road)"/>
+  <g stroke="#ee0000" stroke-width="4" stroke-dasharray="60 50" opacity="0.7">
+    <line x1="0" y1="862" x2="1600" y2="862"/>
+  </g>
+
+  <!-- runner wearing a red hat -->
+  <g transform="translate(140 0)" stroke="#000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="0" cy="668" r="19" fill="#000" stroke="none"/>
+    <line x1="-4" y1="690" x2="-22" y2="752"/>
+    <polyline points="-6,700 24,722 52,706"/>
+    <polyline points="-8,702 -40,716 -66,690"/>
+    <polyline points="-22,752 14,776 4,812"/>
+    <polyline points="-22,752 -58,770 -92,758"/>
+  </g>
+  <g transform="translate(140 0)">
+    <ellipse cx="0" cy="654" rx="34" ry="8" fill="#ee0000"/>
+    <path d="M-20 654 Q-20 622 0 622 Q20 622 20 654 Z" fill="#ee0000"/>
+    <path d="M-20 650 H20 V644 H-20 Z" fill="#000"/>
+  </g>
+
+  <!-- speed lines -->
+  <g stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.35">
+    <line x1="0" y1="700" x2="30" y2="700"/><line x1="0" y1="730" x2="24" y2="730"/>
+    <line x1="0" y1="760" x2="20" y2="760"/>
+  </g>
+</svg>

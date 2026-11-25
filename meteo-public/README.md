@@ -35,6 +35,10 @@ from("direct:airQuality")
 
 Once you enable `camel-quarkus-opentelemetry2`, every `direct:` route shows up as a named span in the trace. That gives you a clean five-span waterfall per request and immediately tells you which upstream API is eating your latency.
 
+## Web UI
+
+The app ships with a small static UI (plain HTML, CSS and JavaScript served by Quarkus from `META-INF/resources`). Start the app with `mvn quarkus:dev` and open `http://localhost:8080/`. Enter a city and a two-letter country code, and the page calls `POST /rating` and shows the overall grade plus one colour-coded card per factor (air quality, feels-like temperature, wind, precipitation, sky and cloud cover). Green means great running conditions, red means poor. The card colours use the same thresholds as `MeteoService`.
+
 ## Dependencies
 
 ### REST and Serialization
