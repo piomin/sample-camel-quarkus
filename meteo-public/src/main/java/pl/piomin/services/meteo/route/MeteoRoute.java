@@ -25,7 +25,7 @@ public class MeteoRoute extends RouteBuilder {
     public void configure() {
         interceptSendToEndpoint("https://air-quality-api.open-meteo.com/*")
                 .process(exchange -> {
-                    Thread.sleep(new Random().nextInt(200, 2000));
+                    Thread.sleep(new Random().nextInt(200, 2500));
                 });
 
         restConfiguration()
@@ -40,6 +40,7 @@ public class MeteoRoute extends RouteBuilder {
 
         from("direct:getRating")
             .routeId("get-running-rating")
+            .log("City: ${body.city}")
             .setProperty("request", simple("${body}"))
             .to("direct:geocode")
             .to("direct:airQuality")
